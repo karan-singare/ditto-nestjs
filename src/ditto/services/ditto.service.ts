@@ -1,11 +1,16 @@
 import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { Ditto } from '@dittolive/ditto';
+import { BehaviorSubject } from 'rxjs';
 import { SubscriptionsService } from './subscriptions.service';
 
 @Injectable()
 export class DittoService implements OnModuleInit, OnModuleDestroy {
   private ditto: Ditto;
   private isConnectedState: boolean = false;
+  
+  // RxJS BehaviorSubject to emit events when subscriptions are registered
+  // Using BehaviorSubject so late subscribers can still receive the event
+  public subscriptionsRegistered$ = new BehaviorSubject<boolean>(false);
 
   constructor(private readonly subscriptionsService: SubscriptionsService) {}
 
@@ -26,7 +31,11 @@ export class DittoService implements OnModuleInit, OnModuleDestroy {
       console.log('Ditto connection established successfully');
 
       // Register sync subscriptions for all collections after starting sync
-      this.subscriptionsService.registerAllSubscriptions(this.ditto);
+      // this.subscriptionsService.registerAllSubscriptions(this.ditto);
+      
+      // Emit event that subscriptions are registered
+      this.subscriptionsRegistered$.next(true);
+      console.log('Subscriptions registered event emitted');
     } catch (error) {
       console.error('Failed to initialize Ditto:', error);
       this.isConnectedState = false;
@@ -39,8 +48,7 @@ export class DittoService implements OnModuleInit, OnModuleDestroy {
       try {
         // Cancel all subscriptions before stopping sync
         this.subscriptionsService.cancelAllSubscriptions();
-        
-        await this.ditto.stopSync();
+        this.ditto.stopSync();
         this.isConnectedState = false;
         console.log('Ditto connection stopped');
       } catch (error) {

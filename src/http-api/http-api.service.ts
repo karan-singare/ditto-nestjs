@@ -1,5 +1,5 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
-import { DittoService } from '../ditto/ditto.service';
+import { DittoService } from '../ditto/services';
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
 
 @Injectable()
@@ -52,26 +52,11 @@ export class HttpApiService {
         config.params = params;
       }
 
-      // Add request body for POST, PUT, PATCH methods
       if (body && ['POST', 'PUT', 'PATCH'].includes(method.toUpperCase())) {
         config.data = body;
       }
 
-      console.log(`Forwarding ${method.toUpperCase()} request to: ${url}`);
-      console.log('Request config:', {
-        method: config.method,
-        url: config.url,
-        params: config.params,
-        headers: config.headers,
-        data: config.data,
-      });
-
-      // Make the request
       const response: AxiosResponse = await axios(config);
-
-      console.log(`Response status: ${response.status}`);
-      console.log(`Response data:`, response.data);
-
       return response.data;
     } catch (error) {
       console.error('Error forwarding request to Ditto HTTP API:', error);

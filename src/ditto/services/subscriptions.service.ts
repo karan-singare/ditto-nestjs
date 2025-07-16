@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Ditto } from '@dittolive/ditto';
-import { DITTO_COLLECTIONS } from '../constants';
+import { DITTO_COLLECTIONS } from '../../constants';
 
 @Injectable()
 export class SubscriptionsService {
@@ -40,6 +40,26 @@ export class SubscriptionsService {
       console.log(`Registered sync subscription for collection: ${collectionName}`);
     } catch (error) {
       console.error(`Failed to register subscription for collection ${collectionName}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Register a sync subscription by custom query
+   * @param ditto - The Ditto instance to use for subscriptions
+   * @param query - The SQL query to subscribe to
+   * @param subscriptionKey - Unique key to identify this subscription (optional, defaults to query)
+   * @returns The subscription object
+   */
+  registerSubscriptionByQuery(ditto: Ditto, query: string, subscriptionKey?: string): any {
+    try {
+      const key = subscriptionKey || query;
+      const subscription = ditto.sync.registerSubscription(query);
+      this.subscriptions.set(key, subscription);
+      console.log(`Registered sync subscription for query: ${query}`);
+      return subscription;
+    } catch (error) {
+      console.error(`Failed to register subscription for query ${query}:`, error);
       throw error;
     }
   }

@@ -1,8 +1,9 @@
 import { Module } from '@nestjs/common';
-import { DittoService } from './ditto.service';
-import { SubscriptionsService } from './subscriptions.service';
+import { DittoService, SubscriptionsService } from './services';
+import { SyncController } from './sync.controller';
 
 @Module({
+  controllers: [SyncController],
   providers: [DittoService, SubscriptionsService],
   exports: [DittoService, SubscriptionsService],
 })
