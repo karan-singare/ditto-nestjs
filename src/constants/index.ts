@@ -1,0 +1,1 @@
+export { DITTO_COLLECTIONS, type DittoCollectionName } from './ditto.constants'; 

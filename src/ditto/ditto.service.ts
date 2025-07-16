@@ -1,10 +1,13 @@
 import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { Ditto } from '@dittolive/ditto';
+import { SubscriptionsService } from './subscriptions.service';
 
 @Injectable()
 export class DittoService implements OnModuleInit, OnModuleDestroy {
   private ditto: Ditto;
   private isConnectedState: boolean = false;
+
+  constructor(private readonly subscriptionsService: SubscriptionsService) {}
 
   async onModuleInit() {
     try {
@@ -21,6 +24,9 @@ export class DittoService implements OnModuleInit, OnModuleDestroy {
       this.ditto.startSync();
       this.isConnectedState = true;
       console.log('Ditto connection established successfully');
+
+      // Register sync subscriptions for all collections after starting sync
+      this.subscriptionsService.registerAllSubscriptions(this.ditto);
     } catch (error) {
       console.error('Failed to initialize Ditto:', error);
       this.isConnectedState = false;
@@ -31,6 +37,9 @@ export class DittoService implements OnModuleInit, OnModuleDestroy {
   async onModuleDestroy() {
     if (this.ditto) {
       try {
+        // Cancel all subscriptions before stopping sync
+        this.subscriptionsService.cancelAllSubscriptions();
+        
         await this.ditto.stopSync();
         this.isConnectedState = false;
         console.log('Ditto connection stopped');
